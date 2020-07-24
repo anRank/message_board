@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Message</title>
+    <script src="../static/vue.js"></script>
+    <script src="../static/axios.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-menu
+            class="el-menu-demo"
+            mode="horizontal"
+            background-color="#545c64"
+            text-color="#fff"
+            active-text-color="#ffd04b">
+        <el-menu-item index="1"><a href="{{ url_for('home') }}">首页</a></el-menu-item>
+        <el-menu-item index="2">测试</el-menu-item>
+        <el-menu-item index="3">消息中心</el-menu-item>
+        <el-menu-item index="4"><a href="{{ url_for('message') }}">留言板</a></el-menu-item>
+    </el-menu>  <!--首栏-->
+{#    <el-table#}
+{#      :data="tableData"#}
+{#      style="width: 100%">#}
+{#      <el-table-column prop="name" label="Name"></el-table-column>#}
+{#      <el-table-column prop="say" label="Content"></el-table-column>#}
+{#    </el-table>#}
+
+
+    <div v-for="site in tableData">
+        <el-divider content-position="left">${ site.name }</el-divider>
+        <span>${ site.say }</span>
+    </div>
+    <br>
+    <el-input
+            type="textarea"
+            :rows="2"
+            placeholder="请输入内容"
+            v-model="textarea">
+    </el-input>
+    <br/>
+    <div align="center">
+        <el-button type="primary" @click="handleSubmit">提交</el-button>
+    </div>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        delimiters: ['${', '}'],
+        data: {
+            tableData: [{
+                name: '7qw8er9',
+                say: 'blablablabla'
+            }],
+            textarea: '',
+            getData: [],
+        },
+        methods: {
+            handleSubmit(){
+                var content = this.textarea;
+                this.textarea = '';
+                axios({
+                    url: '/submit_message',
+                    method: 'post',
+                    data: {'content': content}
+                }).then((res)=>{
+                    console.log(res.config.data)
+                }).catch((err) => {
+                    console.log(err)
+                })
+                location.reload() {# 刷新页面 #}
+            },
+        },
+        created: function () {
+            axios({
+                url: '/read_message',
+                method: 'get'
+            }).then((res) => {
+                console.log(res);
+                let d = res.data;
+                d = d.replace(/^\s*|\s*$/g,"");
+                let getData = d.split(" ");
+                {#console.log(getData)#}
+                for(let i=0;i<getData.length;i++){
+                    let dic ={"name": getData[i], "say": getData[i+1]};
+                    this.tableData.push(dic)
+                    i+=1;
+                }
+                console.log(this.tableData)
+            }).catch((err) => {
+                console.log(err)
+            })
+        },
+    })
+</script>
+</html>
+
+{#for(let i=0;i<this.getData.length;i++){#}
+{#                    dic = {"name": this.getData[i], "content": this.getData[i+1]}#}
+{#                    this.tableData.push(dic);#}
+{#                    i+=1;#}
+{#                }#}
